@@ -1,5 +1,5 @@
       // Circle formula
-      var CIRCLE = Math.PI * 2;
+      let CIRCLE = Math.PI * 2;
 
       // Initializations for controls
       function Controls() {
@@ -14,7 +14,7 @@
 
       // On key down
       Controls.prototype.onTouch = function(e) {
-        var t = e.touches[0];
+        let t = e.touches[0];
         this.onTouchEnd(e);
         if (t.pageY < window.innerHeight * 0.5) this.onKey(true, { keyCode: 38 });
         else if (t.pageX < window.innerWidth * 0.5) this.onKey(true, { keyCode: 37 });
@@ -30,7 +30,7 @@
 
       // Helps with key presses and prevents refresh on key press
       Controls.prototype.onKey = function(val, e) {
-        var state = this.codes[e.keyCode];
+        let state = this.codes[e.keyCode];
         if (typeof state === 'undefined') return;
         this.states[state] = val;
         e.preventDefault && e.preventDefault();
@@ -60,8 +60,8 @@
 
       // When player forward or back
       Player.prototype.walk = function(distance, map) {
-        var dx = Math.cos(this.direction) * distance;
-        var dy = Math.sin(this.direction) * distance;
+        let dx = Math.cos(this.direction) * distance;
+        let dy = Math.sin(this.direction) * distance;
         if (map.get(this.x + dx, this.y) <= 0) this.x += dx;
         if (map.get(this.x, this.y + dy) <= 0) this.y += dy;
         this.paces += distance;
@@ -94,25 +94,25 @@
 
       // Randomize map
       Map.prototype.randomize = function() {
-        for (var i = 0; i < this.size * this.size; i++) {
+        for (let i = 0; i < this.size * this.size; i++) {
           this.wallGrid[i] = Math.random() < 0.3 ? 1 : 0;
         }
       };
 
       // Casting out rays
       Map.prototype.cast = function(point, angle, range) {
-        var self = this;
-        var sin = Math.sin(angle);
-        var cos = Math.cos(angle);
-        var noWall = { length2: Infinity };
+        let self = this;
+        let sin = Math.sin(angle);
+        let cos = Math.cos(angle);
+        let noWall = { length2: Infinity };
 
         return ray({ x: point.x, y: point.y, height: 0, distance: 0 });
 
         // Rays from origin point
         function ray(origin) {
-          var stepX = step(sin, cos, origin.x, origin.y);
-          var stepY = step(cos, sin, origin.y, origin.x, true);
-          var nextStep = stepX.length2 < stepY.length2
+          let stepX = step(sin, cos, origin.x, origin.y);
+          let stepY = step(cos, sin, origin.y, origin.x, true);
+          let nextStep = stepX.length2 < stepY.length2
             ? inspect(stepX, 1, 0, origin.distance, stepX.y)
             : inspect(stepY, 0, 1, origin.distance, stepY.x);
 
@@ -123,8 +123,8 @@
         // Each step player takes
         function step(rise, run, x, y, inverted) {
           if (run === 0) return noWall;
-          var dx = run > 0 ? Math.floor(x + 1) - x : Math.ceil(x - 1) - x;
-          var dy = dx * (rise / run);
+          let dx = run > 0 ? Math.floor(x + 1) - x : Math.ceil(x - 1) - x;
+          let dy = dx * (rise / run);
           return {
             x: inverted ? y + dy : x + dx,
             y: inverted ? x + dx : y + dy,
@@ -134,8 +134,8 @@
 
         // Helps with collision detection
         function inspect(step, shiftX, shiftY, distance, offset) {
-          var dx = cos < 0 ? shiftX : 0;
-          var dy = sin < 0 ? shiftY : 0;
+          let dx = cos < 0 ? shiftX : 0;
+          let dy = sin < 0 ? shiftY : 0;
           step.height = self.get(step.x - dx, step.y - dy);
           step.distance = distance + Math.sqrt(step.length2);
           if (shiftX) step.shading = cos < 0 ? 2 : 0;
@@ -172,10 +172,10 @@
       // Prepares the columns to be drawn
       Camera.prototype.drawColumns = function(player, map) {
         this.ctx.save();
-        for (var column = 0; column < this.resolution; column++) {
-          var x = column / this.resolution - 0.5;
-          var angle = Math.atan2(x, this.focalLength);
-          var ray = map.cast(player, player.direction + angle, this.range);
+        for (let column = 0; column < this.resolution; column++) {
+          let x = column / this.resolution - 0.5;
+          let angle = Math.atan2(x, this.focalLength);
+          let ray = map.cast(player, player.direction + angle, this.range);
           this.drawColumn(column, ray, angle, map, player);
         }
         this.ctx.restore();
@@ -183,21 +183,21 @@
 
       // Draws each column on the screen
       Camera.prototype.drawColumn = function(column, ray, angle, map, player) {
-        var ctx = this.ctx;
-        var texture = map.wallTexture;
-        var floorTexture = map.floorTexture;
-        var left = Math.floor(column * this.spacing);
-        var width = Math.ceil(this.spacing);
-        var hit = -1;
-        var wall;
+        let ctx = this.ctx;
+        let texture = map.wallTexture;
+        let floorTexture = map.floorTexture;
+        let left = Math.floor(column * this.spacing);
+        let width = Math.ceil(this.spacing);
+        let hit = -1;
+        let wall;
 
         while (++hit < ray.length && ray[hit].height <= 0);
 
-        for (var s = ray.length - 1; s >= 0; s--) {
-            var step = ray[s];
+        for (let s = ray.length - 1; s >= 0; s--) {
+            let step = ray[s];
 
             if (s === hit) {
-                var textureX = Math.floor(texture.width * step.offset);
+                let textureX = Math.floor(texture.width * step.offset);
                 wall = this.project(step.height, angle, step.distance);
 
                 ctx.globalAlpha = 1;
@@ -211,19 +211,19 @@
             // Prevents crash for endless horizon
             if(wall) {
                 // Draw the floor texture
-                var floorHeight = wall.top + wall.height;
-                var floorX = (player.x + step.x) * floorTexture.width % (floorTexture.width * 2);
-                var floorY = (player.y + step.y) * floorTexture.height % (floorTexture.height * 2);
+                let floorHeight = wall.top + wall.height;
+                let floorX = (player.x + step.x) * floorTexture.width % (floorTexture.width * 2);
+                let floorY = (player.y + step.y) * floorTexture.height % (floorTexture.height * 2);
                 ctx.drawImage(floorTexture.image, floorX, floorY, width, this.height - floorHeight, left, floorHeight, width, this.height - floorHeight);
 
-                // Draw the blue floor
-                // ctx.fillStyle = 'blue';
-                // var floorHeight = wall.top + wall.height;
-                // ctx.fillRect(left, floorHeight, width, this.height - floorHeight);
+                //Draw the blue floor
+                //ctx.fillStyle = 'blue';
+                //let floorHeight = wall.top + wall.height;
+                //ctx.fillRect(left, floorHeight, width, this.height - floorHeight);
 
                 // Draw the red ceiling
                 ctx.fillStyle = 'red';
-                var ceilingHeight = 0;
+                let ceilingHeight = 0;
                 ctx.fillRect(left, ceilingHeight, width, wall.top);
             }
         }
@@ -231,9 +231,9 @@
 
       // Gets walls based on camera position
       Camera.prototype.project = function(height, angle, distance) {
-        var z = distance * Math.cos(angle);
-        var wallHeight = this.height * height / z;
-        var bottom = this.height / 2 * (1 + 1 / z);
+        let z = distance * Math.cos(angle);
+        let wallHeight = this.height * height / z;
+        let bottom = this.height / 2 * (1 + 1 / z);
         return {
           top: bottom - wallHeight,
           height: wallHeight
@@ -255,18 +255,18 @@
 
       // Framerate
       GameLoop.prototype.frame = function(time) {
-        var seconds = (time - this.lastTime) / 1000;
+        let seconds = (time - this.lastTime) / 1000;
         this.lastTime = time;
         if (seconds < 0.2) this.callback(seconds);
         requestAnimationFrame(this.frame);
       };
 
-      var display = document.getElementById('display');
-      var player = new Player(15.3, -1.2, Math.PI * 0.3);
-      var map = new Map(32);
-      var controls = new Controls();
-      var camera = new Camera(display, 320, 0.8);
-      var loop = new GameLoop();
+      let display = document.getElementById('display');
+      let player = new Player(15.3, -1.2, Math.PI * 0.3);
+      let map = new Map(32);
+      let controls = new Controls();
+      let camera = new Camera(display, 320, 0.8);
+      let loop = new GameLoop();
 
       map.randomize();
       
